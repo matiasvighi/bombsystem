@@ -25,6 +25,8 @@ int Timerresbomb =500;
 int timerstartbomb=500;
 int Timerstartbomb=500;
 
+bool FlagSisterna = 0;
+
 void setup() {
 Serial.begin(9600);
 pinMode(FlotanteSis, INPUT_PULLUP);
@@ -43,7 +45,8 @@ void loop() {
 
     if (FlotanteSis == 1)  {
       digitalWrite(ElectrOut, 0); // si el flotante no marca que la sisterna está llena, lleno, (chequear lógica).
-      timersis --; // 
+      timersis --; //
+      FlagSisterna = 1 ; // habilito el llenado del tanque 
 
     }
     else {
@@ -57,6 +60,8 @@ void loop() {
       timersis = Timersis;           // reseteo el timer
 
     }
+
+   
 // caso puedo mantener la preción en el sistema:
 
   
@@ -64,30 +69,32 @@ void loop() {
  //    digitalWrite(BombaOut, 0); 
  //    timerbomb-- ;
  //  }
-
+    
  // caso no puedo mantener la presción en el sistema  
-    if ((timerbomb != 0) && (timerresbomb == 0)){
+ timerresbomb --; // cuento el tiempo para volver a intentar llenar
+ if (timerresbomb < 0){timerresbomb=0;}  // evito números negativos (no recuerdo que tipo de variable es).
+
+    if ((timerstartbomb != 0) && (timerresbomb == 0)){
         digitalWrite(BombaOut, 0); 
-      timerbomb-- ;
+    //  timerbomb-- ;
     }
     if(PresSens > TanqueLleno - MasMenos  ){ // si la presión es más que la predefinida de tnque lleno, apago la bomba
       digitalWrite(BombaOut, 1);
-      timerbomb == Timerbomb;
-      timerresbomb == Timerresbomb;
+      timerstartbomb == Timerstartbomb;        // resetear esto pone denuevo el tiempo para medir el vaciado de la sisterna
+      timerresbomb == Timerresbomb; // resetear esto pone a contar el tiempo para voler a intentar llenar
     }
       else{
-        timerstartbomb = Timerstartbomb;       
-      }
-
-    if (((PresSens > LLenand + MasMenos) || (PresSens > LLenand - MasMenos)) && (timerstartbomb != 0 )) { // si la precion es mas o menos la que corresponde a que está llenando y está contando el tiempo de llenado,.. 
-      if (PresSens < SisVac - MasMenos){            //pregunto si la presión cayo
-      digitalWrite(BombaOut, 1);
+        timerstartbomb --;           //empiezo a contar el tiempo de vaciado de la sisterna (10 min aprox)
+        
 
       }
-// revisar el momento en que la bomba se prende.
+    if (timerstartbomb <= 99){  // 99 es un número aleatorio que representa el tiempo que tarda en estabilizar el sistema de subida de agua
+      if (!((PresSens > LLenand + MasMenos) || (PresSens > LLenand - MasMenos)) || (timerstartbomb == 0 )) { // si la precion NO es mas o menos la que corresponde a que está llenando o terminó tiempo de llenado,.. 
+      //  if (PresSens < SisVac - MasMenos){            //pregunto si la presión cayo
+        digitalWrite(BombaOut, 1);            //apago la bomba 
+        timerstartbomb = Timerstartbomb;     // reseteo el tiempo de llenado del tanque
+        FlagSisterna = 0;         // deshabilito el llendao del tanque ya que se supone que la sisterna está vacia.
+        }
     }
-      digitalWrite(BombaOut, 1);
-      timerbomb == Timerbomb;
-      timerresbomb == Timerresbomb;
-      timerstartbomb = Timerstartbomb;    
+
 }
