@@ -58,7 +58,12 @@ void loop() {
       Serial.println("error en la carga de la sisterna");
       digitalWrite(ledpin, 0);
       timersis = Timersis;           // reseteo el timer
-
+      digitalWrite(ElectrOut, 1);
+      bool state = digitalRead(BombaOut);
+      digitalWrite(BombaOut,1);
+      delay(50000);                    //freno un toque para enfriar y depaso bloqueo el código
+      digitalWrite(ElectrOut, 0);
+      digitalWrite(BombaOut,state);
     }
 
    
@@ -78,13 +83,14 @@ void loop() {
         digitalWrite(BombaOut, 0); 
     //  timerbomb-- ;
     }
+    // falta que hagamos algo si la presión cae por debajo del minimo o sea que la sisterna está vacia
     if(PresSens > TanqueLleno - MasMenos  ){ // si la presión es más que la predefinida de tnque lleno, apago la bomba
       digitalWrite(BombaOut, 1);
       timerstartbomb == Timerstartbomb;        // resetear esto pone denuevo el tiempo para medir el vaciado de la sisterna
       timerresbomb == Timerresbomb; // resetear esto pone a contar el tiempo para voler a intentar llenar
     }
-      else{
-        timerstartbomb --;           //empiezo a contar el tiempo de vaciado de la sisterna (10 min aprox)
+      else{ // verificar cuando agregue lo de la presión baja, que este else no quede arafue
+        timerstartbomb --;           //empiezo a contar el tiempo de vaciado de la sisterna (10 min aprox) 
         
 
       }
